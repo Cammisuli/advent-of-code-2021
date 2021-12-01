@@ -1,0 +1,9 @@
+[package]
+name = "day1"
+license = "MIT or Apache"
+authors = ["Jonathan Cammisuli <jon@cammisuli.ca>"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+itertools = "*"
