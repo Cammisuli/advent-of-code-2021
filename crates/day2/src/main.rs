@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 const INPUT: &str = include_str!("input.txt");
 
 fn main() {
@@ -32,16 +34,17 @@ fn solve_problem2(input: &str) -> i32 {
     let mut aim = 0;
 
     for line in input.lines() {
-        let mut split = line.split_whitespace();
-        let movement = split.next();
-        let amount = split.next().and_then(|x| x.parse::<i32>().ok());
-        match (movement, amount) {
-            (Some("forward"), Some(movement)) => {
+        let tuple: Option<(&str, i32)> = line
+            .split_whitespace()
+            .collect_tuple()
+            .map(|(direction, amount)| ((direction, amount.parse::<i32>().ok().unwrap_or(0))));
+        match tuple {
+            Some(("forward", movement)) => {
                 forward += movement;
                 depth += (movement * aim);
             }
-            (Some("down"), Some(movement)) => aim += movement,
-            (Some("up"), Some(movement)) => aim -= movement,
+            Some(("down", movement)) => aim += movement,
+            Some(("up", movement)) => aim -= movement,
             _ => (),
         }
     }
