@@ -34,18 +34,20 @@ fn solve_problem2(input: &str) -> i32 {
     let mut aim = 0;
 
     for line in input.lines() {
-        let tuple: Option<(&str, i32)> = line
+        let option_tuple: Option<(&str, i32)> = line
             .split_whitespace()
             .collect_tuple()
             .map(|(direction, amount)| ((direction, amount.parse::<i32>().ok().unwrap_or(0))));
-        match tuple {
-            Some(("forward", movement)) => {
-                forward += movement;
-                depth += (movement * aim);
+        if let Some(tuple) = option_tuple {
+            match tuple {
+                ("forward", movement) => {
+                    forward += movement;
+                    depth += (movement * aim);
+                }
+                ("down", movement) => aim += movement,
+                ("up", movement) => aim -= movement,
+                _ => (),
             }
-            Some(("down", movement)) => aim += movement,
-            Some(("up", movement)) => aim -= movement,
-            _ => (),
         }
     }
 
