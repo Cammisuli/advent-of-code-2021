@@ -1,47 +1,8 @@
-use itertools::Itertools;
-use vectrix::Matrix;
+mod board;
+
+use board::Board;
 
 const INPUT: &str = include_str!("input.txt");
-
-type BoardMatrix = Matrix<(u32, bool), 5, 5>;
-
-struct Board {
-    numbers: BoardMatrix,
-}
-impl Board {
-    fn mark_number(&mut self, called_number: u32) {
-        self.numbers = self
-            .numbers
-            .iter()
-            .map(|x| {
-                if x.0 == called_number {
-                    return (x.0, true);
-                }
-                *x
-            })
-            .collect()
-    }
-
-    fn is_winner(&self) -> bool {
-        let row_full = self.numbers.iter_rows().any(|row| row.iter().all(|x| x.1));
-
-        let col_full = self
-            .numbers
-            .iter_columns()
-            .any(|col| col.iter().all(|x| x.1));
-
-        row_full || col_full
-    }
-
-    fn score(&self, called_number: u32) -> u32 {
-        self.numbers
-            .into_iter()
-            .filter(|x| !x.1)
-            .map(|x| x.0)
-            .sum::<u32>()
-            * called_number
-    }
-}
 
 fn main() {
     println!("problem1: {}", solve_problem1(INPUT));
@@ -49,7 +10,7 @@ fn main() {
 }
 
 fn solve_problem1(input: &str) -> u32 {
-    let (draws, mut boards) = get_inputs(input);
+    let (draws, mut boards) = get_draws_and_boards(input);
     for number in draws {
         for board in boards.iter_mut() {
             board.mark_number(number);
@@ -63,12 +24,32 @@ fn solve_problem1(input: &str) -> u32 {
     0
 }
 
-fn get_inputs(input: &str) -> (Vec<u32>, Vec<Board>) {
+#[allow(unused)]
+fn solve_problem2(input: &str) -> u32 {
+    let (draws, mut boards) = get_draws_and_boards(input);
+    for number in draws {
+        if let [mut board] = *boards {
+            // there's only one board left at this point :sweat_smile:
+            board.mark_number(number);
+            return board.score(number);
+        }
+
+        boards = boards
+            .into_iter()
+            .map(|mut board| {
+                board.mark_number(number);
+                board
+            })
+            .filter(|x| !x.is_winner())
+            .collect();
+    }
+
+    0
+}
+
+fn get_draws_and_boards(input: &str) -> (Vec<u32>, Vec<Board>) {
     let (draws, boards) = input.split_once("\n\n").unwrap();
-    let draws: Vec<u32> = draws
-        .split(',')
-        .filter_map(|x| x.parse().ok())
-        .collect_vec();
+    let draws: Vec<u32> = draws.split(',').filter_map(|x| x.parse().ok()).collect();
 
     let boards: Vec<Board> = boards
         .split("\n\n")
@@ -81,16 +62,11 @@ fn get_inputs(input: &str) -> (Vec<u32>, Vec<Board>) {
                         .map(|n| (n, false))
                 })
                 .collect();
-            Board { numbers }
+            Board::new(numbers)
         })
         .collect();
 
     (draws, boards)
-}
-
-#[allow(unused)]
-fn solve_problem2(input: &str) -> i32 {
-    todo!()
 }
 
 #[cfg(test)]
